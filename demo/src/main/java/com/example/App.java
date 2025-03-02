@@ -17,11 +17,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 
-public class App extends Application {
+public class App extends Application 
+{
     private final int WIDTH = 800;
     private final int HEIGHT = 600;
     
-    // Two separate queues (lists) for each user.
     private final ObservableList<String> ivanMessages = FXCollections.observableArrayList();
     private final ObservableList<String> annaMessages = FXCollections.observableArrayList();
 
@@ -30,14 +30,13 @@ public class App extends Application {
     Chat chat = new Chat(peer1, peer2);
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) 
+    {
         chat.connectUsers();
         
-        // Start receiver threads for each peer.
         startMessageReceiver(peer1, ivanMessages);
         startMessageReceiver(peer2, annaMessages);
 
-        // Primary window for Ivan.
         VBox primaryRoot = new VBox();
         primaryRoot.setSpacing(10);
         primaryRoot.setAlignment(Pos.CENTER);
@@ -49,7 +48,6 @@ public class App extends Application {
         primaryStage.setTitle("Ivan");
         primaryStage.show();
 
-        // Secondary window for Anna.
         Stage secondaryStage = new Stage();
         VBox secondaryRoot = new VBox();
         secondaryRoot.setSpacing(10);
@@ -63,17 +61,13 @@ public class App extends Application {
         secondaryStage.show();
     }
 
-    private Scene createScene(VBox container) {
+    private Scene createScene(VBox container) 
+    {
         return new Scene(container, WIDTH, HEIGHT);
     }
-
-    /**
-     * Creates a text input section for the given user.
-     * @param userName the name of the sender (and used to route the message)
-     * @param messagesList the ObservableList that will display received messages for this user
-     * @return a VBox containing a TextField for message input, a Submit button, and a ListView of messages.
-     */
-    private VBox createTextInputSection(String userName, ObservableList<String> messagesList) {
+   
+    private VBox createTextInputSection(String userName, ObservableList<String> messagesList) 
+    {
         TextField textField = new TextField();
         textField.setPromptText("Enter your message");
         textField.setPrefWidth(200);
@@ -85,10 +79,13 @@ public class App extends Application {
 
         EventHandler<ActionEvent> submitHandler = event -> {
             String message = textField.getText().trim();
-            if (!message.isEmpty()) {
-                // Send the message via the chat. It is assumed that this method routes the message
-                // from the given user to the other peer.
+            if (!message.isEmpty()) 
+            {
                 chat.getUserToSendMsg(userName, message);
+                if(userName.equals("Ivan"))
+                    ivanMessages.add("Me: " + message);
+                else
+                    annaMessages.add("Me: " + message);
                 textField.clear();
             }
         };
@@ -102,24 +99,24 @@ public class App extends Application {
         return textInputBox;
     }
 
-    /**
-     * Starts a background thread that continually polls for new messages from the given peer.
-     * If a new message is received, it is added to the corresponding ObservableList.
-     * @param peer the peer from which to receive messages
-     * @param messagesList the ObservableList to update with incoming messages
-     */
-    private void startMessageReceiver(Peer peer, ObservableList<String> messagesList) {
+    private void startMessageReceiver(Peer peer, ObservableList<String> messagesList) 
+    {
         Thread receiverThread = new Thread(() -> {
 
-            String name = peer == peer2 ? "Ivan" : "Anna";
-            while (true) {
+            String name = peer == peer2 ? peer1.get_name() : peer2.get_name();
+            while (true)
+            {
                 String msg = peer.getRecivedMessage();
-                if (msg != null && !msg.isEmpty()) {
+                if (msg != null && !msg.isEmpty()) 
                     Platform.runLater(() -> messagesList.add(name + ": " + msg));
-                }
-                try {
-                    Thread.sleep(100); // Poll every 100ms.
-                } catch (InterruptedException e) {
+                
+                try 
+                {
+                    Thread.sleep(100);
+                } 
+                
+                catch (InterruptedException e)
+                {
                     e.printStackTrace();
                 }
             }
@@ -128,7 +125,8 @@ public class App extends Application {
         receiverThread.start();
     }
 
-    public static void main(String[] args) {
+    public static void main(String[] args) 
+    {
         launch(args);
     }
 }
