@@ -1,5 +1,7 @@
 package com.example;
 
+import java.io.File;
+
 import com.example.chat.Peer;
 
 import javafx.application.Platform;
@@ -19,13 +21,11 @@ public class ChatViewModel
         startMessageReceiver();
     }
 
-    // Expose the message list for binding
     public ObservableList<String> getMessages() 
     {
         return messages;
     }
 
-    // Handle sending messages or files
     public void sendMessage(String input) 
     {
         if (input.startsWith("file:")) 
@@ -34,9 +34,9 @@ public class ChatViewModel
             if (parts.length >= 1) 
             {
                 String filePath = parts[0].trim();
+                String fileName = new File(filePath).getName();
                 peer.addFileForSending(filePath);
-                // Note: Original code doesn’t update UI for files, so we don’t here either
-            }
+                messages.add("Me: Queued file " + fileName + " for sending.");            }
             else
             {
                 System.out.println("Invalid file format. Use 'file:<path>.");
@@ -44,12 +44,12 @@ public class ChatViewModel
         } 
         else
         {
-            messages.add("Me: " + input); // Update UI with sent message
-            peer.addMsg(input);           // Send message via Model
+            messages.add("Me: " + input); 
+            peer.addMsg(input);           
         }
     }
 
-    // Poll for received messages in a background thread
+
     private void startMessageReceiver() 
     {
         Thread receiverThread = new Thread(() -> {
@@ -58,9 +58,10 @@ public class ChatViewModel
                 String msg = peer.getRecivedMessage();
                 if (msg != null && !msg.isEmpty()) 
                 {
-                    // Update UI on JavaFX thread
+
                     Platform.runLater(() -> messages.add(otherUserName + ": " + msg));
                 }
+
                 try 
                 {
                     Thread.sleep(100);
@@ -69,6 +70,7 @@ public class ChatViewModel
                 {
                     e.printStackTrace();
                 }
+
             }
         });
         receiverThread.setDaemon(true);
